@@ -1,12 +1,20 @@
 {
     _images+:: null,
 
-    _promScrape+:: {
-        enable: false,
-        annotations: {
-            "prometheus.io/path": "/actuator/prometheus",
-            "prometheus.io/port": 8181,
-            "prometheus.io/scrape": true,
+    _config+:: {
+        replicas: 1,
+        ports: [
+            // {
+            //     name: null,
+            //     number: null,
+            //     isSvcPort: false,
+            // },
+        ],
+        name: null,  // deployment and container name
+        svcName: null,
+        ingName: null,
+        metadata: {
+            labels: {},
         },
     },
 
@@ -39,29 +47,38 @@
     _podProbe+:: {
         enable: false,
         startup: {
+            enable: true,
             FailureThreshold: 24,
             PeriodSeconds: 5,
         },
         liveness: {
+            enable: true,
             FailureThreshold: 5,
             PeriodSeconds: 10,
             InitialDelaySeconds: 3,
             TimeoutSeconds: 2,
         },
         readiness: {
+            enable: true,
             FailureThreshold: 11,
             PeriodSeconds: 5,
             InitialDelaySeconds: 5,
             TimeoutSeconds: 2,
         },
+        // ref: _config.ports[]
+        tcpSocketPort: null,
+        httpGetPort: null,
+        httpGetPath: null,
     },
 
     _deploy+:: {
         progressDeadlineSeconds: 120,
         revisionHistoryLimit: 20,
         imagePullSecrets: {
-            enable: true,
-            secret: 'acr-auth',
+            enable: false,
+            secret: [
+                { name: null },
+            ],
         },
         securityContext: {
             runAsUser: 65534,
@@ -70,18 +87,42 @@
         },
     },
 
-    _config+:: {
-        replicas: 1,
-        port: {
-            server: null,
-            metrics: null,
+    _promScrape+:: {
+        enable: false,
+        annotations: {
+            'prometheus.io/path': '/actuator/prometheus',
+            'prometheus.io/port': '8181',
+            'prometheus.io/scrape': 'true',
         },
-        name: null,
-        svcName: null,
-        metadata: {
-            labels: {
-                project: 'easygo',
+    },
+
+    _ingress+:: {
+        enable: false,
+        className: null,
+        annotations: {
+            // 'nginx.ingress.kubernetes.io/force-ssl-redirect': 'true',
+        },
+        rules: [
+            {
+                hosts: null,
+                paths: [
+                    // {
+                    //     svcName: null,
+                    //     svcPort: null,
+                    //     path: '/',
+                    //     pathType: 'Prefix',
+                    // },
+                ],
             },
+        ],
+        security: {
+            enable: false,
+            tls: [
+                {
+                    hosts: [],
+                    secret: null,
+                },
+            ],
         },
     },
 }
